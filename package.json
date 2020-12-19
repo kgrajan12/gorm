@@ -1,5 +1,5 @@
 {
-  "name": "g_orm",
+  "name": "gorm",
   "version": "1.0.0",
   "description": "This is a ORM and specially made for Mysql database.",
   "main": "build.js",
