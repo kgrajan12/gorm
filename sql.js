@@ -147,7 +147,7 @@ class SQL {
       );
     });
   }
-  update({ data, table, where, like }, callback, end = true) {
+  update({ data, table, where, like }, end = true) {
     this.connect();
     let query = `UPDATE ${this.getTable(table)} SET ?`;
     if (where != undefined || like != undefined) {
@@ -175,7 +175,7 @@ class SQL {
       });
     });
   }
-  delete({ table, where, like }, callback, end = true) {
+  delete({ table, where, like }, end = true) {
     this.connect();
     let query = `DELETE FROM ${this.getTable(table)}`;
     if (where != undefined || like != undefined) {
