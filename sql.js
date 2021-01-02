@@ -1,219 +1,98 @@
-const mysql = require("mysql");
-
-const sqlConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-};
-const isValidElement = (elm) => elm != undefined && elm != null;
-const isValidObject = (obj) => isValidElement(obj) && typeof obj == "object";
-const strJoin = (arr, separator) => {
-  var str = [];
-  var key = 0;
-  arr.forEach((v, k) => {
-    if (k > 0) {
-      var val = separator[key];
-      if (val == undefined) {
-        key = 0;
-        val = separator[key];
-      }
-      str.push(` ${val} `);
-      key++;
-    }
-    str.push(v);
-  });
-  return str.join("");
-};
+const mysql = require("mysql2/promise");
+const { isValidElement, generateQuery } = require("./generateQuery");
 
 class SQL {
-  constructor(config) {
-    if (isValidElement(config)) {
-      this.updateDBConfig(config);
-    } else {
-      this.updateDBConfig(sqlConfig);
-    }
-    this.table = "";
-    this.columns = [];
+  constructor({ host, user, password, database }) {
+    this._config = { host, user, password, database };
+    this._columns = [];
+    this._table = "";
+    this._connWaitTime = 3000;
+    this.hasConnection = new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (isValidElement(this.conn)) {
+          clearInterval(interval);
+          resolve(true);
+        }
+      }, 1);
+      setTimeout(() => {
+        if (!isValidElement(this.conn)) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, this._connWaitTime);
+    });
+
+    mysql
+      .createConnection({ host, user, password, database })
+      .then((conn) => {
+        this.conn = conn;
+      })
+      .catch((err) => console.log(err));
+  }
+  async safe(cb) {
+    if (await this.hasConnection) return cb();
+    return {
+      message: "failed to connect DB",
+    };
   }
   getData() {
     const data = {};
-    this.columns.forEach((col) => {
+    this._columns.forEach((col) => {
       data[col] = this[col];
     });
+    return data;
   }
-  updateDBConfig({ host, user, password, database }) {
-    this.dbConfig = { ...this.dbConfig, ...{ host, user, password, database } };
-    this.conn = mysql.createConnection(this.dbConfig);
+  async connect() {
+    return await this.safe(() => this.conn.connect());
   }
-  connect() {
-    console.log(this.conn.state);
-    if (this.conn.state != "authenticated") this.conn.connect();
+  async pause() {
+    return await this.safe(() => this.conn.pause());
   }
-  getTable(table) {
-    return isValidElement(table) ? table : this.table;
+  async end() {
+    return await this.safe(() => this.conn.end());
   }
-  pause() {
-    this.conn.pause();
+  async select({
+    where,
+    like,
+    orderBy,
+    join,
+    on,
+    joinBy = ["AND"],
+    whereBy = ["AND"],
+    joinOperator = ["="],
+    whereOperator = ["="],
+    joinType = "JOIN",
+  }) {
+    return await this.query(
+      generateQuery("SELECT", {
+        table: this._table,
+        columns: this._columns,
+        where,
+        like,
+        orderBy,
+        join,
+        on,
+        joinBy,
+        whereBy,
+        joinOperator,
+        whereOperator,
+        joinType,
+      })
+    );
   }
-  resume() {
-    this.conn.resume();
+  async insert({ data }) {
+    return await this.query(generateQuery("INSERT", { data, table: this._table }));
   }
-  end() {
-    // this.conn.end();
+  async update({ data, where, like }) {
+    return await this.query(
+      generateQuery("UPDATE", { data, table: this._table, where, like })
+    );
   }
-  select(
-    {
-      table,
-      columns,
-      where,
-      like,
-      orderBy,
-      join,
-      on,
-      joinBy = ["AND"],
-      whereBy = ["AND"],
-      joinOperator = ["="],
-      whereOperator = ["="],
-      joinType = "JOIN",
-    },
-    end = true
-  ) {
-    this.connect();
-    const column = columns == undefined ? "*" : columns.join(", ");
-    let query = `SELECT ${column} FROM ${this.getTable(table)}`;
-    if (isValidObject(join) && isValidObject(on)) {
-      const joinConditions = [];
-      if (isValidObject(on)) {
-        Object.keys(on).forEach((val, key) =>
-          joinConditions.push(
-            `${val}${joinOperator[key % joinOperator.length]}${on[val]}`
-          )
-        );
-      }
-      query += ` ${joinType} ${join.table} ON (${strJoin(
-        joinConditions,
-        joinBy
-      )})`;
-    }
-    if (isValidObject(where) || isValidObject(like)) {
-      const whereString = [];
-      if (isValidObject(where)) {
-        Object.keys(where).forEach((val, key) =>
-          whereString.push(
-            `${val}${whereOperator[key % whereOperator.length]}'${where[val]}'`
-          )
-        );
-      }
-      if (isValidObject(like)) {
-        Object.keys(like).forEach((val) =>
-          whereString.push(`${val} LIKE '${like[val]}'`)
-        );
-      }
-      query += ` WHERE ${strJoin(whereString, whereBy)}`;
-    }
-    if (isValidObject(orderBy)) {
-      query +=
-        " ORDER BY " +
-        orderBy
-          .map((val) => `${val.column} ${val.asc ? "ASC" : "DESC"}`)
-          .join(", ");
-    }
-    return new Promise((resolve, reject) => {
-      this.conn.query(query, (e, r) => {
-        if (end) this.end();
-        if (e == null) {
-          resolve(r);
-        } else {
-          reject(e);
-        }
-      });
-    });
+  async delete({ where, like }) {
+    return await this.query(generateQuery("DELETE", { table: this._table, where, like }));
   }
-  insert({ data, table }, end = true) {
-    this.connect();
-    return new Promise((resolve, reject) => {
-      this.conn.query(
-        `INSERT INTO ${this.getTable(table)} SET ?`,
-        isValidElement(data) ? data : this.getData(),
-        (e, r) => {
-          if (end) this.end();
-          if (e == null) {
-            resolve(r);
-          } else {
-            reject(e);
-          }
-        }
-      );
-    });
-  }
-  update({ data, table, where, like }, end = true) {
-    this.connect();
-    let query = `UPDATE ${this.getTable(table)} SET ?`;
-    if (where != undefined || like != undefined) {
-      const whereString = [];
-      if (where != undefined) {
-        Object.keys(where).forEach((val) =>
-          whereString.push(`${val}='${where[val]}'`)
-        );
-      }
-      if (like != undefined) {
-        Object.keys(like).forEach((val) =>
-          whereString.push(`${val} LIKE '${like[val]}'`)
-        );
-      }
-      query += ` WHERE ${whereString.join(" AND ")}`;
-    }
-    return new Promise((resolve, reject) => {
-      this.conn.query(query, data, (e, r) => {
-        if (end) this.end();
-        if (e == null) {
-          resolve(r);
-        } else {
-          reject(e);
-        }
-      });
-    });
-  }
-  delete({ table, where, like }, end = true) {
-    this.connect();
-    let query = `DELETE FROM ${this.getTable(table)}`;
-    if (where != undefined || like != undefined) {
-      const whereString = [];
-      if (where != undefined) {
-        Object.keys(where).forEach((val) =>
-          whereString.push(`${val}='${where[val]}'`)
-        );
-      }
-      if (like != undefined) {
-        Object.keys(like).forEach((val) =>
-          whereString.push(`${val} LIKE '${like[val]}'`)
-        );
-      }
-      query += ` WHERE ${whereString.join(" AND ")}`;
-    }
-    return new Promise((resolve, reject) => {
-      this.conn.query(query, (e, r) => {
-        if (end) this.end();
-        if (e == null) {
-          resolve(r);
-        } else {
-          reject(e);
-        }
-      });
-    });
-  }
-  query(query, end = true) {
-    return new Promise((resolve, reject) => {
-      this.conn.query(query, (e, r) => {
-        if (end) this.end();
-        if (e == null) {
-          resolve(r);
-        } else {
-          reject(e);
-        }
-      });
-    });
+  async query(query) {
+    return this.safe(() => this.conn.query(query));
   }
 }
 

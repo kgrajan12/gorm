@@ -15,17 +15,17 @@ const model = {
 const build = (config) => {
   const sql = new SQL(config);
 
-  const key = `Tables_in_${sql.dbConfig.database}`;
+  const key = `Tables_in_${sql._config.database}`;
 
   sql.query("show tables").then((doc) => {
-    const tables = doc.map((v) => v[key]);
+    const tables = doc[0].map((v) => v[key]);
     model.tables = tables;
     const promises = [];
     tables.forEach((table) => {
       promises.push(
         new Promise((res, rej) =>
           sql.query(`DESCRIBE ${table}`).then((doc) => {
-            const columns = doc.map((v) => v.Field);
+            const columns = doc[0].map((v) => v.Field);
             model.columns[table] = columns;
             res(columns);
           })
@@ -41,7 +41,8 @@ const build = (config) => {
       writeFileSync("db/index.js", getIndex(model.tables));
       // writeFileSync("db/model.json", JSON.stringify(model));
       copyFileSync(__dirname + "/sql.js", "db/sql.js");
-      writeFileSync("db/conn.json", JSON.stringify(sql.dbConfig));
+      copyFileSync(__dirname + "/generateQuery.js", "db/generateQuery.js");
+      writeFileSync("db/conn.json", JSON.stringify(sql._config));
       mkdirSync("db/model");
       model.tables.forEach((table) => {
         writeFileSync(

@@ -27,8 +27,8 @@ class ${cam(table)} extends SQL {
             ${columns.map(col => `this.${col} = props.${col};`).join('\n\t\t\t')}
         }
         
-        this.columns = ${JSON.stringify(columns)}
-        this.table = '${table}';
+        this._columns = ${JSON.stringify(columns)}
+        this._table = '${table}';
     }
 }
 
