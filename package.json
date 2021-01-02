@@ -1,8 +1,8 @@
 {
   "name": "@kgrajan12/orm",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "This is a ORM and specially made for Mysql database.",
-  "main": "build.js",
+  "main": "sql.js",
   "bin": {
     "gorm": "index.js"
   },

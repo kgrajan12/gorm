@@ -18,7 +18,7 @@ const cam = str => {
 //     ${Object.keys(config).map(v => `${v}: '${config[v]}'`).join(',\n\t')}
 // });`;
 
-const getModel = (table, columns) => `const SQL = require('../sql');
+const getModel = (table, columns) => `const SQL = require('@kgrajan12/orm');
 
 class ${cam(table)} extends SQL {
     constructor(props) {

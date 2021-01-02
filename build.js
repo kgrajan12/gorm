@@ -1,7 +1,7 @@
+const { exec } = require("child_process");
 const {
   mkdirSync,
   writeFileSync,
-  copyFileSync,
   existsSync,
   unlinkSync,
 } = require("fs");
@@ -39,9 +39,6 @@ const build = (config) => {
       }
       mkdirSync("db");
       writeFileSync("db/index.js", getIndex(model.tables));
-      // writeFileSync("db/model.json", JSON.stringify(model));
-      copyFileSync(__dirname + "/sql.js", "db/sql.js");
-      copyFileSync(__dirname + "/generateQuery.js", "db/generateQuery.js");
       writeFileSync("db/conn.json", JSON.stringify(sql._config));
       mkdirSync("db/model");
       model.tables.forEach((table) => {
@@ -50,6 +47,7 @@ const build = (config) => {
           getModel(table, model.columns[table])
         );
       });
+      exec('npm install --save @kgrajan12/orm');
     });
   });
 };

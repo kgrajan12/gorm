@@ -2,6 +2,10 @@
 
 This is a ORM and specially made for Mysql database.
 
+## Changes in this version
+- Migrate to Mysql2 from Mysql.
+- removed all callbacks make that all promise.
+
 ## install CLI
 install this orm cli first to initiate the setup
 ```sh
@@ -22,7 +26,6 @@ gorm
         |   |   - / <list of models>.js
         |   - /conn.json
         |   - /index.js
-        |   - /sql.js
 
 Now it is asking for database credentials.
 Ater giving the database credentials it generate model codes for you in `/db/model`
