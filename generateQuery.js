@@ -52,7 +52,7 @@ const generateQuery = (type, config) => {
           )
           );
         }
-        query += ` ${joinType} ${join.table} ON (${strJoin(
+        query += ` ${joinType} ${join._table} ON (${strJoin(
           joinConditions,
           joinBy
         )})`;

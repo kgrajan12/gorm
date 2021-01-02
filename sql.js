@@ -52,6 +52,7 @@ class SQL {
     return await this.safe(() => this.conn.end());
   }
   async select({
+    columns,
     where,
     like,
     orderBy,
@@ -66,7 +67,7 @@ class SQL {
     return await this.query(
       generateQuery("SELECT", {
         table: this._table,
-        columns: this._columns,
+        columns,
         where,
         like,
         orderBy,
