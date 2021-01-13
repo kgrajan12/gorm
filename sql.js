@@ -93,7 +93,8 @@ class SQL {
     return await this.query(generateQuery("DELETE", { table: this._table, where, like }));
   }
   async query(query) {
-    return this.safe(() => this.conn.query(query));
+    const resp = await this.safe(() => this.conn.query(query));
+    return resp[0] || null;
   }
 }
 
