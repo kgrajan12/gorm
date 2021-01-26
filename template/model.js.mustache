@@ -1,0 +1,22 @@
+const SQL = require('@kgrajan12/orm');
+const conn = require('../conn.json');
+
+class {{class}} extends SQL {
+    constructor(props) {
+        super(conn);
+        if(props != undefined) {
+            {{#field}}
+            this.{{name}} = props.{{name}};
+            {{/field}}
+        }
+
+        this._colums = [
+            {{#field}}
+            "{{name}}",
+            {{/field}}
+        ];
+        this._table = "{{model}}";
+    }
+}
+
+module.exports = {{class}};

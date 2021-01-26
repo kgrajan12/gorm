@@ -1,22 +1,27 @@
 {
   "name": "@kgrajan12/orm",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "This is a ORM and specially made for Mysql database.",
-  "main": "sql.js",
+  "main": "src/sql.js",
   "bin": {
-    "gorm": "index.js"
+    "@kgrajan12/orm": "bin/orm.js",
+    "gorm": "bin/orm.js"
   },
   "scripts": {
-    "start": "node .",
-    "test": "jest --coverage --detectOpenHandles"
+    "test": "jest --coverage"
   },
   "author": "Gajarajan K <teknikgg@gmail.com> (https://youtube.com/teknikgg)",
   "license": "ISC",
   "dependencies": {
+    "@types/jest": "^26.0.20",
+    "arg": "^5.0.0",
+    "chalk": "^4.1.0",
+    "esm": "^3.2.25",
+    "execa": "^5.0.0",
+    "inquirer": "^7.3.3",
+    "listr": "^0.14.3",
+    "mustache": "^4.1.0",
     "mysql2": "^2.2.5"
-  },
-  "devDependencies": {
-    "jest": "^26.6.3"
   },
   "repository": {
     "type": "git",
@@ -24,10 +29,16 @@
   },
   "keywords": [
     "ORM",
-    "Mysql"
+    "Mysql",
+    "CLI",
+    "Model",
+    "SQL"
   ],
   "bugs": {
     "url": "https://github.com/kgrajan12/gorm/issues"
   },
-  "homepage": "https://github.com/kgrajan12/gorm#readme"
+  "homepage": "https://github.com/kgrajan12/gorm#readme",
+  "devDependencies": {
+    "jest": "^26.6.3"
+  }
 }

@@ -1,4 +1,4 @@
-const mysql = require("mysql2/promise");
+const mysql = require('mysql2/promise');
 const { isValidElement, generateQuery } = require("./generateQuery");
 
 class SQL {
@@ -27,7 +27,9 @@ class SQL {
       .then((conn) => {
         this.conn = conn;
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        this.err = err;
+      });
   }
   async safe(cb) {
     if (await this.hasConnection) return cb();
@@ -38,6 +40,7 @@ class SQL {
   getData() {
     const data = {};
     this._columns.forEach((col) => {
+      console.log(col);
       data[col] = this[col];
     });
     return data;
@@ -63,7 +66,7 @@ class SQL {
     joinOperator = ["="],
     whereOperator = ["="],
     joinType = "JOIN",
-  }) {
+  } = {}) {
     return await this.query(
       generateQuery("SELECT", {
         table: this._table,

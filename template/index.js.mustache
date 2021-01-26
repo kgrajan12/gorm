@@ -1,0 +1,9 @@
+{{#cam}}
+const {{class}} = require('./model/{{model}}');
+{{/cam}}
+
+module.exports = {
+    {{#cam}}
+    {{class}},
+    {{/cam}}
+};
