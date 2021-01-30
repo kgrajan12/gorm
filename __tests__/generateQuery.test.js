@@ -195,7 +195,7 @@ it("should generate select query", () => {
   ).toBe(
     "SELECT column1, column2 FROM test_table WHERE column1='good' OR column2!='morning'"
   );
-    expect(generateQuery("INSERT", { table, data })).toBe("INSERT INTO test_table (column1, column2) VALUES (good, morning)");
+    expect(generateQuery("INSERT", { table, data })).toBe("INSERT INTO test_table (column1, column2) VALUES ('good', 'morning')");
     expect(generateQuery("UPDATE", { table, data })).toBe("UPDATE test_table SET column1='good', column2='morning'");
     expect(generateQuery("UPDATE", { table, data, where })).toBe("UPDATE test_table SET column1='good', column2='morning' WHERE column1='good'");
     expect(generateQuery("UPDATE", { table, data, like })).toBe("UPDATE test_table SET column1='good', column2='morning' WHERE column1 LIKE '% world'");

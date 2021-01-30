@@ -97,7 +97,7 @@ class SQL {
   }
   async query(query) {
     const resp = await this.safe(() => this.conn.query(query));
-    return resp[0] || null;
+    return resp[0] || resp;
   }
 }
 

@@ -112,9 +112,10 @@ const generateQuery = (type, config) => {
       }
       return query;
     case "INSERT":
+      const values = Object.values(data).map(v => `'${v}'`);
       return `INSERT INTO ${table} (${Object.keys(data).join(
         ", "
-      )}) VALUES (${Object.values(data).join(", ")})`;
+      )}) VALUES (${values.join(", ")})`;
     case "UPDATE":
       query = `UPDATE ${table} SET `;
       Object.entries(data).forEach(([key, value]) => {
