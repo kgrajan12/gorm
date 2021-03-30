@@ -123,7 +123,7 @@ function generateCode(path, data) {
 
     ensureDir('db');
     ensureDir('db/model');
-    if(fs.existsSync(path)) {
+    if(fs.existsSync('db/' + path)) {
         fs.unlinkSync('db/' + path);
     }
     fs.writeFileSync('db/' + path, data);
