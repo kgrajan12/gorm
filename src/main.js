@@ -105,7 +105,7 @@ async function retrieveModalData(sql, options) {
     const res = await sql.query('show tables');
     const tables = res.map((v) => v[key]);
     promises = tables.map(table => {
-        return sql.query(`DESCRIBE ${table}`).then(doc => {
+        return sql.query(`DESCRIBE \`${table}\``).then(doc => {
             const columns = doc.map((v) => v.Field);
             data[table] = columns;
         })

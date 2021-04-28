@@ -97,7 +97,7 @@ class SQL {
   }
   async query(query) {
     const resp = await this.safe(() => this.conn.query(query));
-    return resp[0] || resp;
+    return JSON.parse(JSON.stringify(resp[0] || resp));
   }
 }
 
